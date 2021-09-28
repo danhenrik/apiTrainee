@@ -1,10 +1,10 @@
+const PropertyService = require('../../property/services/PropertyService');
+const {User, Image} = require('../../../database/initializer');
+const passwordToken = require('../../../redis/password-token');
+const bcrypt = require('bcrypt');
+const PasswordTokenError = require('../../../errors/PasswordTokenError');
 const EmptyDatabaseError = require('../../../errors/EmptyDatabaseError');
 const InvalidParamError = require('../../../errors/InvalidParamError');
-const bcrypt = require('bcrypt');
-const {User} = require('../../../database/initializer');
-const passwordToken = require('../../../redis/password-token');
-const PasswordTokenError = require('../../../errors/PasswordTokenError');
-
 class UserService {
   async create(user) {
     const bcryptSalt = 10;
@@ -32,9 +32,18 @@ class UserService {
     return user;
   }
 
+  async getProperties(id) {
+    const user = await User.findByPk(id);
+    const properties = await user.getProperties({
+      include: [{model: Image, as: 'Images'}],
+    });
+    return properties;
+  }
+
   async updatePassword(userID, password) {
     const user = await User.findByPk(userID);
     if (!user) throw new InvalidParamError('Não existe um usuário com este ID');
+
     const PWDsAreEqual = await bcrypt.compare(password, user.password);
     if (PWDsAreEqual) {
       throw new InvalidParamError(
@@ -42,27 +51,8 @@ class UserService {
       );
     }
     const bcryptSalt = 10;
-    const newPassword = await bcrypt.hash(passwrod, bcryptSalt);
-    user.update({password: newPassword});
-  }
-
-  async updateRole(userID, role) {
-    const user = await User.findByPk(userID);
-    user.update({role});
-    return user;
-  }
-
-  async resetPassword(token, newPassword) {
-    const email = await passwordToken.getEmail(token);
-    if (email) {
-      const saltRounds = 10;
-      const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
-      await User.update({password: hashedNewPassword}, {where: {email}});
-
-      await passwordToken.removeToken(token);
-    } else {
-      throw new PasswordTokenError('O token de reset não existe ou expirou!');
-    }
+    const newPassword = await bcrypt.hash(password, bcryptSalt);
+    await user.update({password: newPassword});
   }
 
   async alter(id, body) {
@@ -74,7 +64,28 @@ class UserService {
   async delete(id) {
     const user = await User.findByPk(id);
     if (!user) throw new InvalidParamError('Não existe um usuário com este ID');
+    const properties = await user.getProperties();
+    for (const property of properties) {
+      await PropertyService.delete(property.id);
+    }
     await user.destroy();
+  }
+
+  async getUserByEmail(email) {
+    const user = await User.findOne({where: {email: email}});
+    return user;
+  }
+
+  async resetPassword(token, newPassword) {
+    const email = await passwordToken.getEmail(token);
+    if (email) {
+      const saltRounds = 10;
+      const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+      await User.update({password: hashedNewPassword}, {where: {email}});
+      await passwordToken.removeToken(token);
+    } else {
+      throw new PasswordTokenError('O token de reset não existe ou expirou!');
+    }
   }
 }
 

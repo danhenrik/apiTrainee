@@ -10,6 +10,10 @@ const User = sequelize.define('Users', {
     allowNull: false,
     unique: true,
   },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   email: {
     type: DataTypes.STRING,
     unique: true,
@@ -19,9 +23,12 @@ const User = sequelize.define('Users', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  name: {
+  role: {
     type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      isIn: [['User', 'Admin']],
+    },
   },
 });
 

@@ -2,25 +2,23 @@ const nodemailer = require('nodemailer');
 const fs = require('fs');
 const handlebars = require('handlebars');
 
+// https://myaccount.google.com/lesssecureapps?pli=1&rapt=AEjHL4MtkSLOQcnXIe3rsHXXooYTbq1_6qRFgw3XE5S2XJOJTCDzW3LH2R7vLqasO33mfgmRmvPNv26rbFMoBlkOXy1MM_xeeg
 class SendMailService {
-  #transporter
+  #transporter;
   constructor() {
-    nodemailer.createTestAccount()
-    .then((testAccount) => {
+    try {
       const transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: testAccount.port,
-        secure: process.env.NODE_ENV === 'production',
+        service: 'gmail',
+        secure: true,
         auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
-        }
+          user: process.env.MAIL_USR,
+          pass: process.env.MAIL_PWD,
+        },
       });
       this.#transporter = transporter;
-    })
-    .catch((error) =>  {
+    } catch (error) {
       throw error;
-    })
+    }
   }
 
   async send({sender, receiver, subject, path}, variables) {
@@ -28,16 +26,13 @@ class SendMailService {
     const templateParse = handlebars.compile(templateFile);
     const html = templateParse(variables);
 
-    const info = await this.#transporter.sendMail({
+    await this.#transporter.sendMail({
       from: sender,
       to: receiver,
       subject: subject,
-      html: html
+      html: html,
     });
-
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-    return 'Email enviado com sucesso!'
   }
 }
 
-module.exports = new SendMailService;
+module.exports = new SendMailService();
