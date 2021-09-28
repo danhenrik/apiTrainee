@@ -21,4 +21,3 @@ module.exports = {
   blacklistDb: 0,
   passwordTokenDb: 1,
 };
-

@@ -7,13 +7,14 @@
  * @return {null}
  */
 function requestFilter(object, keys) {
-  return function(req, res, next) {
+  return (req, res, next) => {
     try {
-      Object.keys(req[object]).forEach((key) => {
-        if (keys.indexOf(key) === -1) {
+      console.log('reqFilter');
+      for (const key in req[object]) {
+        if (!keys.includes(key)) {
           delete req[object][key];
         }
-      });
+      }
       next();
     } catch (error) {
       next(error);

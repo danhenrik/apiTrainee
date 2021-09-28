@@ -4,11 +4,9 @@ const {validate} = require('./validate');
 const {User} = require('../database/initializer');
 const bcrypt = require('bcrypt');
 
-// TODO: Acabar os body validators
-
 const getValidations = (method) => {
   switch (method) {
-    case 'registerUser': {
+    case 'register': {
       return [
         body('email')
           .exists()
@@ -77,7 +75,7 @@ const getValidations = (method) => {
           .withMessage('Por favor, insira sua antiga senha')
           .custom(async (value, {req}) => {
             const userID = req.user.id;
-            const user = User.findByPk(userID);
+            const user = await User.findByPk(userID);
             const oldPassword = user.password;
             const passwordMatch = await bcrypt.compare(value, oldPassword);
             if (!passwordMatch) {
@@ -97,7 +95,7 @@ const getValidations = (method) => {
               'especial',
           )
           .custom((value, {req}) => {
-            if (value !== req.body.passwordConfirmation) {
+            if (value !== req.body.newPasswordConfirmation) {
               return Promise.reject(
                 new InvalidParamError(
                   'Senha e confirmação de senha não coincidem.',
@@ -108,7 +106,7 @@ const getValidations = (method) => {
           }),
       ];
     }
-    case 'updateUser': {
+    case 'update': {
       return [
         body('name')
           .optional()
@@ -166,5 +164,5 @@ const getValidations = (method) => {
 };
 
 module.exports = {
-  userValidate: (method) => validate(getValidations(method), 'user'),
+  userValidate: (method) => validate(getValidations(method)),
 };

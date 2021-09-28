@@ -3,7 +3,6 @@ const {MulterError} = require('multer');
 const NotAuthorizedError = require('../errors/NotAuthorizedError');
 const MediaTypeError = require('../errors/MediaTypeError');
 const InvalidParamError = require('../errors/InvalidParamError');
-const PasswordTokenError = require('../errors/PasswordTokenError');
 const EmptyDatabaseError = require('../errors/EmptyDatabaseError');
 
 function errorHandler(error, req, res, next) {
@@ -21,7 +20,7 @@ function errorHandler(error, req, res, next) {
 
   if (error instanceof MulterError) {
     status = 413; // Payload Too Large
-    message = 'O arquivo não pode passar de 1MB!';
+    message = 'O arquivo excede o limite de 1MB!';
   }
 
   if (error instanceof MediaTypeError) {
@@ -30,10 +29,6 @@ function errorHandler(error, req, res, next) {
 
   if (error instanceof InvalidParamError) {
     status = 400; // Bad Request
-  }
-
-  if (error instanceof PasswordTokenError) {
-    status = 404; // Not Found
   }
 
   if (error instanceof EmptyDatabaseError) {

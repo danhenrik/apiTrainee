@@ -31,7 +31,9 @@ const storage = multer.diskStorage({
   },
   filename: async (req, file, callback) => {
     const ext = path.extname(file.originalname);
-    const filename = Date.now() + ext;
+    const rdmNumber = Math.floor(Math.random() * 10000);
+    // Gambiarra
+    const filename = Date.now() + rdmNumber + ext;
     callback(null, filename);
   },
 });

@@ -1,8 +1,11 @@
 const NotAuthorizedError = require('../errors/NotAuthorizedError');
+const InvalidParamError = require('../errors/InvalidParamError');
+
 const passport = require('passport');
 const {unlink} = require('fs').promises;
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const {Property} = require('../database/initializer');
 
 function loginMiddleware(req, res, next) {
   passport.authenticate('login', (error, user) => {
@@ -43,6 +46,7 @@ function loginMiddleware(req, res, next) {
 function jwtMiddleware(req, res, next) {
   passport.authenticate('jwt', {session: false}, (error, user) => {
     try {
+      console.log('jwtMiddleware');
       if (error) next(error);
 
       if (!user) {
@@ -64,22 +68,6 @@ function notLoggedIn(errorMessage) {
       if (token) {
         jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
           if (!(err instanceof jwt.TokenExpiredError)) {
-            if (req.file) {
-              /*
-                Essa parte é pra filtrar se o user já ta logado no rota
-                register tbm.
-                Deixei assim porquê estava dando problema e a gente n
-                necessariamente precisa esperar a imagem ser deletada pra
-                responder (se achar algo pode me falar ou mudar)
-                */
-              unlink(
-                path.resolve(
-                  __dirname,
-                  '../../paper-dashboard-react/src/assets/img/entities/users',
-                  req.file.filename,
-                ),
-              );
-            }
             throw new NotAuthorizedError(
               errorMessage || 'Você já está logado no sistema!',
             );
@@ -94,11 +82,14 @@ function notLoggedIn(errorMessage) {
 }
 
 function checkRole(roleArr) {
-  return function (req, res, next) {
+  return async (req, res, next) => {
     try {
       if (roleArr.indexOf(req.user.role) !== -1) {
         next();
       } else {
+        if (req.files) {
+          await delReqImages(req);
+        }
         throw new NotAuthorizedError(
           'Você não tem permissão para realizar essa ação!',
         );
@@ -109,37 +100,33 @@ function checkRole(roleArr) {
   };
 }
 
-function checkDataBelongsToUser(entity) {
-  return async function (req, res, next) {
-    try {
-      if (entity == 'user') {
-        if (!(req.user.id === req.params.id)) {
-          throw new NotAuthorizedError(
-            'Você não pode acessar dados de outros usuários por essa rota!',
-          );
-        }
-      } else if (entity == 'music') {
-        music = await MusicService.getMusicById(req.params.id);
-        musicAuthorId = music.authorId;
-        if (!(req.user.id == musicAuthorId)) {
-          throw new NotAuthorizedError(
-            'Você deve ser o proprietário de uma música para alterá-la!',
-          );
-        }
-      } else if (entity == 'album') {
-        album = await AlbumService.getAlbumById(req.params.id);
-        albumAuthorId = album.authorId;
-        if (!(req.user.id == albumAuthorId)) {
-          throw new NotAuthorizedError(
-            'Você deve ser o proprietário de um álbum para alterá-lo!',
-          );
-        }
-      }
-      next();
-    } catch (error) {
-      next(error);
+async function propertyBelongsToUser(req, res, next) {
+  try {
+    const userID = req.user.id;
+    const propertyID = req.params.id;
+    const property = await Property.findByPk(propertyID);
+    if (!property) {
+      throw new InvalidParamError('Não existe um imóvel com este ID');
     }
-  };
+    const user = await property.getUser();
+    if (user.id != userID) {
+      if (req.files) {
+        await delReqImages(req);
+      }
+      throw new NotAuthorizedError(
+        'Você não tem permissão para acessar estes dados!',
+      );
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function delReqImages({files}) {
+  for (const file of files) {
+    await unlink(path.resolve(__dirname, '../public/images', file.filename));
+  }
 }
 
 module.exports = {
@@ -147,5 +134,6 @@ module.exports = {
   jwtMiddleware,
   checkRole,
   notLoggedIn,
-  checkDataBelongsToUser,
+  propertyBelongsToUser,
+  delReqImages,
 };
