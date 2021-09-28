@@ -20,4 +20,4 @@ Nessa parte de email é necessário as credenciais de um email real do google pa
 Para rodar a API é necessário ter um servidor [Redis](https://redis.io) rodando na sua máquina. Caso seu SO seja Windows, baixe o .zip da release mais recente nesse [repositório](https://github.com/microsoftarchive/redis/releases) e rode o executável `redis-server.exe`. Se seu SO for UNIX, basta seguir as instruções dadas nessa [página](https://redis.io/download).
 
 ## Documentação:
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/14887511-eb3bbe14-26a1-41d9-9934-64c2d8a2b967?action=collection%2Ffork&collection-url=entityId%3D14887511-eb3bbe14-26a1-41d9-9934-64c2d8a2b967%26entityType%3Dcollection%26workspaceId%3D8cf67e7f-4de0-420b-a9c7-8e6bf5803acd)
+[![Abrir documentação](https://run.pstmn.io/button.svg)](https://documenter.getpostman.com/view/14887511/UUxzA7yP#ab86b943-62dc-4494-9a47-c532f925c2df)
