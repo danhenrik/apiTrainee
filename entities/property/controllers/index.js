@@ -3,25 +3,135 @@ const PropertyService = require('../services/PropertyService');
 const {
   jwtMiddleware,
   checkRole,
-  checkDataBelongsToUser,
+  propertyBelongsToUser,
 } = require('../../../middlewares/auth-middlewares');
 const {upload} = require('../../../middlewares/multer');
+const {requestFilter} = require('../../../middlewares/object-filter');
+const {propertyValidate} = require('../../../middlewares/property-validator');
+const NotAuthorizedError = require('../../../errors/NotAuthorizedError');
 
 router.use(jwtMiddleware);
 
-// TODO: Validar o body
-router.post('/', upload(), async (req, res, next) => {
+router.post(
+  '/',
+  upload(),
+  requestFilter('body', [
+    'name',
+    'address',
+    'type',
+    'price',
+    'link',
+    'sellerPhone',
+  ]),
+  propertyValidate('create'),
+  async (req, res, next) => {
+    try {
+      const userID = req.user.id;
+      const property = req.body;
+      const images = req.files;
+      const createdProperty = await PropertyService.create(
+        userID,
+        property,
+        images,
+      );
+      res.status(201).json({id: createdProperty.id});
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+router.post(
+  '/add-images/:id',
+  upload(),
+  propertyBelongsToUser,
+  async (req, res, next) => {
+    try {
+      const ID = req.params.id;
+      const images = req.files;
+      await PropertyService.addImages(ID, images);
+      res.status(200).end();
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+router.get('/:id', propertyBelongsToUser, async (req, res, next) => {
   try {
-    const property = req.body;
-    const images = req.files;
-    await PropertyService.create(property, images);
+    const ID = req.params.id;
+    const property = await PropertyService.getByID(ID);
+    res.status(200).json(property);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch(
+  '/update-data/:id',
+  upload(),
+  requestFilter('body', [
+    'name',
+    'address',
+    'type',
+    'price',
+    'link',
+    'sellerPhone',
+  ]),
+  propertyValidate('update'),
+  propertyBelongsToUser,
+  async (req, res, next) => {
+    try {
+      const ID = req.params.id;
+      const body = req.body;
+      await PropertyService.update(ID, body);
+      res.status(204).end();
+    } catch (error) {
+      next(erro);
+    }
+  },
+);
+
+router.patch(
+  '/remove-images/:id',
+  requestFilter('body', ['images']),
+  propertyBelongsToUser,
+  async (req, res, next) => {
+    try {
+      const propertyID = req.params.id;
+      const property = await PropertyService.getByID(propertyID);
+      const images = req.body.images;
+      const unauthorized = [];
+      for (const imageID of images) {
+        if (!property.Images.some((i) => i.id === imageID)) {
+          unauthorized.push(imageID);
+        } else {
+          await PropertyService.removeImage(imageID);
+        }
+      }
+      if (unauthorized.length > 0) {
+        throw new NotAuthorizedError(
+          `A imagem ${unauthorized[0]} não pertence a esta propriedade.`,
+        );
+      }
+      res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+router.delete('/:id', propertyBelongsToUser, async (req, res, next) => {
+  try {
+    const ID = req.params.id;
+    await PropertyService.delete(ID);
     res.status(204).end();
   } catch (error) {
     next(error);
   }
 });
 
-router.get('/all', async (req, res, next) => {
+router.get('/admin/all', checkRole(['Admin']), async (req, res, next) => {
   try {
     const props = await PropertyService.getAll();
     res.status(200).json(props);
@@ -30,14 +140,10 @@ router.get('/all', async (req, res, next) => {
   }
 });
 
-router.get('/:id', async (req, res, next) => {
-  try {
-    const ID = req.params.id;
-    const property = await PropertyService.getByID(ID);
-    res.status(200).json(property);
-  } catch (error) {
-    next(error);
-  }
+router.delete('/admin/:id', checkRole(['Admin']), async (req, res, next) => {
+  const ID = req.params.id;
+  await PropertyService.delete(ID);
+  res.status(204).end();
 });
 
 module.exports = router;

@@ -12,17 +12,12 @@ Property.hasMany(Image, {
   hooks: true,
 });
 
-/*
-Music.belongsTo(Album);
-Album.hasMany(Music, {
+Property.belongsTo(User);
+User.hasMany(Property, {
   onDelete: 'cascade',
   onUpdate: 'cascade',
   hooks: true,
 });
-
-Music.belongsToMany(User, {through: CustomerMusic});
-User.belongsToMany(Music, {through: CustomerMusic});
-*/
 
 // force - This creates the table, dropping it first if it already existed
 // alter - This checks what is the current state of the table in the  database,

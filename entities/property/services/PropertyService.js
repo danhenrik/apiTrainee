@@ -1,20 +1,24 @@
-const {Image, Property} = require('../../../database/initializer');
+const {Image, Property, User} = require('../../../database/initializer');
 const InvalidParamError = require('../../../errors/InvalidParamError');
+const {unlink} = require('fs').promises;
+const path = require('path');
 
 class PropertyService {
-  async create(property, images) {
+  async create(userID, property, images) {
     const createdProp = await Property.create(property);
-    console.log(images);
     if (images.length > 0) {
-      this.addImages(createdProp.id, images);
+      await this.addImages(createdProp.id, images);
     }
+    const user = await User.findByPk(userID);
+    await createdProp.setUser(user);
     return createdProp;
   }
 
   async addImages(id, images) {
-    const property = Property.findByPk(id, {
-      include: [{model: Image, as: 'Images'}],
-    });
+    const property = await Property.findByPk(id);
+    if (!property) {
+      throw new InvalidParamError('Não existe um imóvel com este ID');
+    }
     for (const image of images) {
       const img = await Image.create({path: image.filename});
       await img.setProperty(property);
@@ -23,7 +27,7 @@ class PropertyService {
 
   async getAll() {
     const props = await Property.findAll({
-      include: [{model: Image, as: 'Images'}],
+      include: [{model: Image, attributes: ['id', 'path']}],
     });
     if (!props) {
       throw new EmptyDatabaseError('Ainda não existem imóveis cadastrados');
@@ -33,7 +37,7 @@ class PropertyService {
 
   async getByID(id) {
     const property = await Property.findByPk(id, {
-      include: [{model: Image, as: 'Images'}],
+      include: [{model: Image, attributes: ['id', 'path']}],
     });
     if (!property) {
       throw new InvalidParamError('Não existe um imóvel com este ID');
@@ -48,6 +52,21 @@ class PropertyService {
     }
     const updatedPro = await property.update(newDetails);
     return updatedPro;
+  }
+
+  async removeImage(id) {
+    const image = await Image.findByPk(id);
+    await unlink(path.resolve(__dirname, '../../../public/images', image.path));
+    await image.destroy();
+  }
+
+  async delete(id) {
+    const property = await Property.findByPk(id);
+    const images = await property.getImages();
+    for (const image of images) {
+      await this.removeImage(image.id);
+    }
+    await property.destroy();
   }
 }
 

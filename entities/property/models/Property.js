@@ -22,6 +22,9 @@ const Property = sequelize.define('Properties', {
   type: {
     type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      isIn: [['Buy', 'Rent']],
+    },
   },
   price: {
     type: DataTypes.STRING,

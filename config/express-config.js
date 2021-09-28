@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-const swaggerUI = require('swagger-ui-express');
 const express = require('express');
 const app = express();
 
@@ -20,10 +19,7 @@ app.use(
 
 app.use(express.json());
 
-app.use(express.static('../public'));
-
-const swaggerSpec = require('./swagger-config');
-app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+app.use(express.static('public'));
 
 const usersRouter = require('../entities/users/controllers');
 app.use('/users', usersRouter);
