@@ -46,7 +46,6 @@ function loginMiddleware(req, res, next) {
 function jwtMiddleware(req, res, next) {
   passport.authenticate('jwt', {session: false}, (error, user) => {
     try {
-      console.log('jwtMiddleware');
       if (error) next(error);
 
       if (!user) {

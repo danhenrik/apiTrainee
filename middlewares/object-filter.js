@@ -9,7 +9,6 @@
 function requestFilter(object, keys) {
   return (req, res, next) => {
     try {
-      console.log('reqFilter');
       for (const key in req[object]) {
         if (!keys.includes(key)) {
           delete req[object][key];
