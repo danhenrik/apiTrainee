@@ -19,5 +19,4 @@ Nessa parte de email é necessário as credenciais de um email real do google pa
 ## Servidor Redis
 Para rodar a API é necessário ter um servidor [Redis](https://redis.io) rodando na sua máquina. Caso seu SO seja Windows, baixe o .zip da release mais recente nesse [repositório](https://github.com/microsoftarchive/redis/releases) e rode o executável `redis-server.exe`. Se seu SO for UNIX, basta seguir as instruções dadas nessa [página](https://redis.io/download).
 
-## Documentação:
-[Abrir documentação](https://documenter.getpostman.com/view/14887511/UUxzA7yP#ab86b943-62dc-4494-9a47-c532f925c2df)
+## [Documentação](https://documenter.getpostman.com/view/14887511/UUxzA7yP#ab86b943-62dc-4494-9a47-c532f925c2df)
