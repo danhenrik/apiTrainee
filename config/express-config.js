@@ -19,7 +19,10 @@ app.use(
 
 app.use(express.json());
 
-app.use(express.static('public'));
+app.get('/images/:path', (req, res, next) => {
+  const fileName = req.params.path;
+  res.redirect(`${process.env.IMAGE_KIT_URL_ENDPOINT}/${fileName}`);
+});
 
 const usersRouter = require('../entities/users/controllers');
 app.use('/users', usersRouter);
