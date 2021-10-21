@@ -2,10 +2,9 @@ const NotAuthorizedError = require('../errors/NotAuthorizedError');
 const InvalidParamError = require('../errors/InvalidParamError');
 
 const passport = require('passport');
-const {unlink} = require('fs').promises;
 const jwt = require('jsonwebtoken');
-const path = require('path');
 const {Property} = require('../database/initializer');
+const {deleteImage} = require('./imageHandler');
 
 function loginMiddleware(req, res, next) {
   passport.authenticate('login', (error, user) => {
@@ -124,7 +123,7 @@ async function propertyBelongsToUser(req, res, next) {
 
 async function delReqImages({files}) {
   for (const file of files) {
-    await unlink(path.resolve(__dirname, '../public/images', file.filename));
+    await deleteImage(file.id);
   }
 }
 

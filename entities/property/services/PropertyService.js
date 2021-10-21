@@ -1,8 +1,6 @@
 const {Image, Property, User} = require('../../../database/initializer');
 const InvalidParamError = require('../../../errors/InvalidParamError');
-const {unlink} = require('fs').promises;
-const path = require('path');
-
+const {deleteImage} = require('../../../middlewares/imageHandler');
 class PropertyService {
   async create(userID, property, images) {
     const createdProp = await Property.create(property);
@@ -20,7 +18,7 @@ class PropertyService {
       throw new InvalidParamError('Não existe um imóvel com este ID');
     }
     for (const image of images) {
-      const img = await Image.create({path: image.filename});
+      const img = await Image.create({id: image.id, path: image.filename});
       await img.setProperty(property);
     }
   }
@@ -56,7 +54,10 @@ class PropertyService {
 
   async removeImage(id) {
     const image = await Image.findByPk(id);
-    await unlink(path.resolve(__dirname, '../../../public/images', image.path));
+    if (!image) {
+      throw new InvalidParamError('Não existe uma imagem com este ID');
+    }
+    await deleteImage(image.id);
     await image.destroy();
   }
 

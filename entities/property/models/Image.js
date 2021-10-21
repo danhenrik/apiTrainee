@@ -1,11 +1,9 @@
 const sequelize = require('../../../database');
 const {DataTypes} = require('sequelize');
-const {nanoid} = require('nanoid');
 
 const Image = sequelize.define('Images', {
   id: {
-    type: DataTypes.STRING(21),
-    defaultValue: () => nanoid(),
+    type: DataTypes.STRING(24),
     primaryKey: true,
     allowNull: false,
     unique: true,

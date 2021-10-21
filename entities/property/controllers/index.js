@@ -5,7 +5,7 @@ const {
   checkRole,
   propertyBelongsToUser,
 } = require('../../../middlewares/auth-middlewares');
-const {upload} = require('../../../middlewares/multer');
+const {upload, saveImage} = require('../../../middlewares/imageHandler');
 const {requestFilter} = require('../../../middlewares/object-filter');
 const {propertyValidate} = require('../../../middlewares/property-validator');
 const NotAuthorizedError = require('../../../errors/NotAuthorizedError');
@@ -15,6 +15,7 @@ router.use(jwtMiddleware);
 router.post(
   '/',
   upload(),
+  saveImage,
   requestFilter('body', [
     'name',
     'address',
@@ -44,6 +45,7 @@ router.post(
 router.post(
   '/add-images/:id',
   upload(),
+  saveImage,
   propertyBelongsToUser,
   async (req, res, next) => {
     try {
@@ -70,6 +72,7 @@ router.get('/:id', propertyBelongsToUser, async (req, res, next) => {
 router.patch(
   '/update-data/:id',
   upload(),
+  saveImage,
   requestFilter('body', [
     'name',
     'address',
