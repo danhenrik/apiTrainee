@@ -15,11 +15,6 @@ app.use(express.urlencoded({extended: true}));
 
 app.use(express.json());
 
-app.get('/images/:path', (req, res, next) => {
-  const fileName = req.params.path;
-  res.redirect(`${process.env.IMAGE_KIT_URL_ENDPOINT}/${fileName}`);
-});
-
 const usersRouter = require('../entities/users/controllers');
 app.use('/users', usersRouter);
 
@@ -28,5 +23,10 @@ app.use('/properties', propertiesRouter);
 
 const errorHandler = require('../middlewares/error-handler');
 app.use(errorHandler);
+
+app.get('/images/:path', (req, res, next) => {
+  const fileName = req.params.path;
+  res.redirect(`${process.env.IMAGE_KIT_URL_ENDPOINT}/${fileName}`);
+});
 
 module.exports = app;

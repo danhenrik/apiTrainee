@@ -55,7 +55,6 @@ passport.use(
         if (blacklistHasToken) {
           throw new JsonWebTokenError('Token inválido por logout!');
         }
-
         return done(null, jwtPayload.user);
       } catch (error) {
         return done(error, false);

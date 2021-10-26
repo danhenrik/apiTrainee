@@ -46,7 +46,8 @@ function jwtMiddleware(req, res, next) {
   passport.authenticate('jwt', {session: false}, (error, user) => {
     try {
       if (error) next(error);
-
+      console.log('user');
+      console.log(user);
       if (!user) {
         throw new NotAuthorizedError('Você precisa estar logado!');
       }
