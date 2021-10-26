@@ -15,7 +15,6 @@ const path = require('path');
 
 router.post(
   '/login',
-  requestFilter('body', ['email', 'password']),
   notLoggedIn(),
   userValidate('login'),
   loginMiddleware,
