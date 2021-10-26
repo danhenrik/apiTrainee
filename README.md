@@ -16,8 +16,6 @@ MAIL_PWD = gmailPwd
 IMAGE_KIT_PUBLIC_KEY= public keydo imagekit
 IMAGE_KIT_PRIVATE_KEY= private key do imagekit
 IMAGE_KIT_URL_ENDPOINT= URL gerada no image kit
-
-
 ```
 Nessa parte de email é necessário as credenciais de um email real do google para enviar os emails de esqueci a senha. Para funcionar vc deve entrar [aqui](https://myaccount.google.com/lesssecureapps?pli=1&rapt=AEjHL4MtkSLOQcnXIe3rsHXXooYTbq1_6qRFgw3XE5S2XJOJTCDzW3LH2R7vLqasO33mfgmRmvPNv26rbFMoBlkOXy1MM_xeeg) com o email colocado no env e habilitar (opcional desde que não utilize os endpoints de forgotPassword). 
 
