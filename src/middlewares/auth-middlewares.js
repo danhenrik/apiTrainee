@@ -30,7 +30,6 @@ function loginMiddleware(req, res, next) {
         });
 
         res.cookie('jwt', token, {
-          // Opções do cookie:
           httpOnly: true,
           secure: process.env.NODE_ENV == 'production',
         });

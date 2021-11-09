@@ -64,6 +64,13 @@ class UserService {
   async delete(id) {
     const user = await User.findByPk(id);
     if (!user) throw new InvalidParamError('Não existe um usuário com este ID');
+    if (user.role == 'Admin') {
+      const admins = await User.findAll({where: {role: 'Admin'}});
+      console.log('admins', admins);
+      if (admins.length == 1) {
+        throw new Error('Você não pode se deletar como o último admin.');
+      }
+    }
     const properties = await user.getProperties();
     for (const property of properties) {
       await PropertyService.delete(property.id);

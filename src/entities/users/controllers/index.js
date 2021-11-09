@@ -13,12 +13,7 @@ const passwordToken = require('../../../redis/password-token');
 const SendMailService = require('../services/SendMailService');
 const path = require('path');
 
-router.post(
-  '/login',
-  notLoggedIn(),
-  userValidate('login'),
-  loginMiddleware,
-);
+router.post('/login', notLoggedIn(), userValidate('login'), loginMiddleware);
 
 router.post(
   '/',
@@ -160,7 +155,6 @@ router.patch(
   userValidate('update'),
   async (req, res, next) => {
     try {
-      // terminar de implementar upload de foto
       const ID = req.user.id;
       const body = req.body;
       await UserService.alter(ID, body);
@@ -175,7 +169,9 @@ router.delete('/', jwtMiddleware, async (req, res, next) => {
   try {
     const ID = req.user.id;
     await UserService.delete(ID);
-    res.status(200).json('Seu usuário foi deletado com sucesso!');
+    req.logout();
+    res.clearCookie('jwt');
+    res.status(204).end();
   } catch (error) {
     next(error);
   }
